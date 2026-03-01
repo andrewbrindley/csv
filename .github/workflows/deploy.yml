@@ -66,6 +66,8 @@ jobs:
         run: |
           npm install
           npm run build
+        env:
+          CI: false
 
       - name: Sync Frontend to S3 Bucket
         working-directory: ./react
