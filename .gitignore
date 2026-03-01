@@ -1,0 +1,38 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+.venv/
+.terraform/
+
+# testing
+coverage/
+.pytest_cache/
+
+# python
+__pycache__/
+*.pyc
+
+# production
+build/
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore large binaries
+*.msi
+*.zip

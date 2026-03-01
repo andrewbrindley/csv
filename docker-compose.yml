@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # 1. Flask REST API
+  flask-api:
+    build:
+      context: ./flask
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - AWS_REGION=ap-southeast-2
+      # You can supply local dummy values or a real AWS credentials profile
+      - S3_UPLOAD_BUCKET=csv-app-uploads-dev
+      - SQS_QUEUE_URL=https://sqs.ap-southeast-2.amazonaws.com/123456789012/csv-import-jobs.fifo
+      # Load from your .env file
+    env_file:
+      - ./flask/.env
+    volumes:
+      - ./flask:/app/src
+    command: python main.py
+
+  # 2. Python Background Worker (SQS Poller)
+  python-worker:
+    build:
+      context: ./flask
+      dockerfile: Dockerfile
+    environment:
+      - AWS_REGION=ap-southeast-2
+      - S3_UPLOAD_BUCKET=csv-app-uploads-dev
+      - SQS_QUEUE_URL=https://sqs.ap-southeast-2.amazonaws.com/123456789012/csv-import-jobs.fifo
+    env_file:
+      - ./flask/.env
+    volumes:
+      - ./flask:/app/src
+    command: python worker.py
+
+  # 3. React Frontend
+  react-frontend:
+    build:
+      context: ./react
+      # Assuming standard create-react-app or Vite
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./react:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    command: npm start

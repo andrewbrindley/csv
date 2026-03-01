@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug API</title>
+</head>
+<body>
+    <h1>API Debugger</h1>
+    <button onclick="checkJobs()">Check Jobs</button>
+    <div id="output"></div>
+    <script>
+        async function checkJobs() {
+            const out = document.getElementById('output');
+            out.innerHTML = "Fetching...";
+            try {
+                const res = await fetch("http://localhost:5000/api/jobs?tenantId=acme-corp");
+                const text = await res.text();
+                out.innerText = "Status: " + res.status + "\n" + text;
+            } catch (e) {
+                out.innerText = "Error: " + e.message;
+            }
+        }
+    </script>
+</body>
+</html>

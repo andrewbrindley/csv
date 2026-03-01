@@ -1,0 +1,16 @@
+======================================================================
+JOB EXECUTION TRACE
+======================================================================
+Job ID:      fad99a76-3144-4ec4-a45a-db741313232f
+Tenant:      acme-corp
+Start Time:  2026-02-21T13:19:14.076000Z
+Records:     5
+======================================================================
+[001] [13:19:14.103] [SUCCESS] PatientData  | ID: 1001     | REF: 1001     | MSG: Upsert complete.
+[002] [13:19:14.103] [SUCCESS] PatientData  | ID: 1002     | REF: 1002     | MSG: Upsert complete.
+[003] [13:19:14.103] [SUCCESS] PatientData  | ID: 1003     | REF: 1003     | MSG: Upsert complete.
+[004] [13:19:14.103] [SUCCESS] PatientData  | ID: 1004     | REF: 1004     | MSG: Upsert complete.
+[005] [13:19:14.103] [FAILED ] PatientData  | ID: 1005     | REF: 1005     | MSG: Foreign Key Violation: Field 'patientId' value '1005' not found in People
+======================================================================
+SUMMARY: 5 Attempted | 4 Success | 1 Failed | 0 Skipped
+======================================================================

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+env/
+.git/
+.idea/
+.vscode/
+*.txt
+!requirements.txt
+*.html
+*.json
+!temps.json

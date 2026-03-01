@@ -1,0 +1,129 @@
+﻿git : remote: error: 
+GH013: Repository rule 
+violations found for 
+refs/heads/master.     
+   
+At line:1 char:1
++ git push -u origin 
+master --force 2> 
+push_error.txt
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo     
+         : 
+NotSpecified:     
+(remote: error: ...m   
+ aster.        :Strin  
+  g) [], RemoteExcepti 
+   on
+    + 
+FullyQualifiedErro    
+rId : NativeCommandE   
+ rror
+ 
+remote: 
+remote: - GITHUB PUSH 
+PROTECTION        
+remote:   ÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö     
+   
+remote:     Resolve 
+the following 
+violations before 
+pushing again        
+remote: 
+remote:     - Push 
+cannot contain secrets 
+       
+remote: 
+remote:             
+remote:      (?) Learn 
+how to resolve a 
+blocked push        
+remote:      https://do
+cs.github.com/code-secu
+rity/secret-scanning/wo
+rking-with-secret-scann
+ing-and-push-protection
+/working-with-push-prot
+ection-from-the-command
+-line#resolving-a-block
+ed-push        
+remote:             
+remote:             
+remote:       ÔÇöÔÇö 
+OpenAI API Key ÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇö        
+remote:        
+locations:        
+remote:          - 
+commit: cc6c2a6cfdfd1b0
+03cdc4bfef1295f8398d415
+43        
+remote:            
+path: src/App.js:60    
+    
+remote:          - 
+commit: f18af3ad570fe12
+b9866ad538bae610ee44b33
+35        
+remote:            
+path: src/App.js:561   
+     
+remote:          - 
+commit: b7b06e8b71024d8
+72ef73828524201e554d99a
+58        
+remote:            
+path: src/App.js:754   
+     
+remote:          - 
+commit: 8cc06f4dcea1fd1
+4893a7a8a3f77d0ed3ffe51
+2c        
+remote:            
+path: src/App.js:759   
+     
+remote:          - 
+commit: db5d210c8e7cf8c
+e10a44cb87dd4b4b37da3b1
+f8        
+remote:            
+path: src/App.js:773   
+     
+remote:             
+remote:        (?) To 
+push, remove secret 
+from commit(s) or 
+follow this URL to 
+allow the secret.      
+  
+remote:        https://
+github.com/andrewbrindl
+ey/csv/security/secret-
+scanning/unblock-secret
+/3ALLZHxm2vgin2gdQL0wKU
+fY1L2        
+remote:             
+remote: 
+remote: 
+To https://github.com/a
+ndrewbrindley/csv.git
+ ! [remote rejected] 
+master -> master (push 
+declined due to 
+repository rule 
+violations)
+error: failed to push 
+some refs to 'https://g
+ithub.com/andrewbrindle
+y/csv.git'

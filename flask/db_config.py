@@ -1,0 +1,156 @@
+import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+# Load .env from the same directory as this file
+base_dir = os.path.dirname(os.path.abspath(__file__))
+dotenv_path = os.path.join(base_dir, '.env')
+load_dotenv(dotenv_path)
+
+# MongoDB Configuration
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "csv")
+
+# Masked logging for verification
+masked_uri = MONGO_URI.split("@")[-1] if "@" in MONGO_URI else "LOCAL/UNKNOWN"
+print(f"STARTUP: Attempting connection to Database: {MONGO_DB_NAME} on Host: {masked_uri}")
+
+# Global DB instance
+_db = None
+
+def get_db():
+    """
+    Connects to MongoDB and returns the database object.
+    Uses a singleton pattern to avoid reconnecting on every request.
+    """
+    global _db
+    if _db is not None:
+        return _db
+        
+    try:
+        print("DB: Establishing new connection...")
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        # Verify connection on startup/first access only
+        client.server_info()
+        _db = client[MONGO_DB_NAME]
+        print("DB: Connection successful.")
+        return _db
+    except Exception as e:
+        print(f"Failed to connect to MongoDB: {e}")
+        return None
+
+# Helper functions for collections
+def get_imports_collection():
+    db = get_db()
+    if db is not None:
+        return db["imports"]
+    return None
+
+def get_tenant_data_collection():
+    db = get_db()
+    if db is not None:
+        return db["tenant_data"]
+    return None
+
+def get_raw_uploads_collection():
+    db = get_db()
+    if db is not None:
+        # User explicitly wants 'raw_uploads' in the 'csv' database
+        return db["raw_uploads"]
+    return None
+
+def get_ingestion_jobs_collection():
+    db = get_db()
+    if db is not None:
+        # User explicitly wants 'ingestion_jobs' in the 'csv' database
+        return db["ingestion_jobs"]
+    return None
+
+def get_ingestion_records_collection():
+    """Get the ingestion_records collection."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["ingestion_records"]
+
+def get_templates_collection():
+    """Get the templates collection for user-defined templates."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["templates"]
+
+def get_webhooks_collection():
+    """Get the webhooks collection for per-tenant webhook configurations."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["webhooks"]
+
+def get_users_collection():
+    """Get the users collection for RBAC."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["users"]
+
+def get_header_aliases_collection():
+    """
+    Get the header_aliases collection for Tier-2 tenant memory.
+    Each document: { tenantId, templateKey, fieldKey, uploadedHeader }
+    A compound unique index on (tenantId, templateKey, fieldKey, uploadedHeader)
+    is created lazily on first use.
+    """
+    db = get_db()
+    if db is None:
+        return None
+    coll = db["header_aliases"]
+    # Ensure index exists (no-op if already present)
+    try:
+        coll.create_index(
+            [("tenantId", 1), ("templateKey", 1), ("fieldKey", 1), ("uploadedHeader", 1)],
+            unique=True,
+            background=True,
+        )
+    except Exception:
+        pass
+    return coll
+
+def get_api_keys_collection():
+    """Get the api_keys collection."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["api_keys"]
+
+def get_audit_logs_collection():
+    """Get the audit_logs collection."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["audit_logs"]
+
+def get_tenants_collection():
+    """Get the tenants collection for multi-tenant management."""
+    db = get_db()
+    if db is None:
+        return None
+    return db["tenants"]
+
+
+def get_field_enrichments_collection():
+    """
+    Cache of AI-generated field enrichments (synonyms + value hints).
+    Keyed on fieldHash = SHA256(templateKey + fieldKey + label + pattern + allowed + description).
+    Unique index on fieldHash ensures one enrichment doc per field definition.
+    """
+    db = get_db()
+    if db is None:
+        return None
+    coll = db["field_enrichments"]
+    try:
+        coll.create_index("fieldHash", unique=True, background=True)
+        coll.create_index([("templateKey", 1), ("fieldKey", 1)], background=True)
+    except Exception:
+        pass
+    return coll
