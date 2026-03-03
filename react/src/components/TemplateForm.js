@@ -137,7 +137,7 @@ const Badge = styled.span`
   ${props => props.type === 'pii' ? `background: #fef3c7; color: #92400e;` : ''}
 `;
 
-const API_BASE = "http://localhost:5000/api";
+import { API_BASE } from "../config";
 
 
 export default function TemplateForm({ tenantId, template, onSave, onCancel }) {
