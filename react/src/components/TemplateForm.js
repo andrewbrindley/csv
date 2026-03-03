@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from "./UserContext";
 import styled from 'styled-components';
 import FieldEditor from './FieldEditor';
+import { API_BASE } from "../config";
 
 // --- Styled Components ---
 const FormContainer = styled.div`
@@ -136,9 +137,6 @@ const Badge = styled.span`
   ${props => props.type === 'identifier' ? `background: #dbeafe; color: #1e40af;` : ''}
   ${props => props.type === 'pii' ? `background: #fef3c7; color: #92400e;` : ''}
 `;
-
-import { API_BASE } from "../config";
-
 
 export default function TemplateForm({ tenantId, template, onSave, onCancel }) {
     const { authFetch } = useUser();

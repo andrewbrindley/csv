@@ -3,6 +3,7 @@ import { useUser } from "./UserContext";
 import styled from "styled-components";
 import SearchTable from "./SearchTable";
 import { Btn } from "../styles";
+import { API_BASE } from "../config";
 // import RelatedData from "./RelatedData"; // Component not found in remote
 
 const Container = styled.div`
@@ -48,9 +49,6 @@ const Select = styled.select`
     border-color: #2563eb;
   }
 `;
-
-import { API_BASE } from "../config";
-
 
 export default function SearchDashboard({ tenantId, templates, active }) {
     const { authFetch } = useUser();
