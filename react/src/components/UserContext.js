@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { API_BASE } from "../config";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const AUTH0_ENABLED = process.env.REACT_APP_AUTH0_ENABLED === "true";
 
@@ -9,7 +10,6 @@ const UserContext = createContext(null);
 /* Auth0-powered provider (used when AUTH0_ENABLED = true)              */
 /* ------------------------------------------------------------------ */
 function Auth0UserProvider({ children }) {
-    const { useAuth0 } = require("@auth0/auth0-react");
     const {
         isAuthenticated,
         isLoading: auth0Loading,
