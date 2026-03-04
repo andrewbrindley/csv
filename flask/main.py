@@ -217,6 +217,10 @@ def custom_swagger_ui():
 </body>
 </html>'''
 
+@app.route('/api/health')
+def health_check():
+    return jsonify({"status": "healthy"}), 200
+
 @app.route('/favicon.ico')
 def favicon():
     return '', 204

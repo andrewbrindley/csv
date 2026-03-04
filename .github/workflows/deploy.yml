@@ -72,7 +72,7 @@ jobs:
           REACT_APP_AUTH0_DOMAIN: dev-xcm0n4hdlsazqzat.us.auth0.com
           REACT_APP_AUTH0_CLIENT_ID: EFVg3y5yMSoZm7R91JjBQ48rU4TbVUUt
           REACT_APP_AUTH0_AUDIENCE: https://csv-import-api/
-          REACT_APP_API_URL: http://csv-app-api-alb-1452195619.ap-southeast-2.elb.amazonaws.com/api
+          REACT_APP_API_URL: https://d1f4d3zc1erncj.cloudfront.net/api
 
       - name: Sync Frontend to S3 Bucket
         working-directory: ./react

@@ -85,7 +85,7 @@ resource "aws_lb_target_group" "api_tg" {
   target_type = "ip"
 
   health_check {
-    path                = "/api/templates" # Endpoint that returns 200
+    path                = "/api/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
