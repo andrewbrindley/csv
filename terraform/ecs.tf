@@ -52,6 +52,13 @@ resource "aws_security_group" "ecs_sg" {
     security_groups = [aws_security_group.alb_sg.id]
   }
 
+  ingress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    self        = true
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -143,7 +150,7 @@ resource "aws_ecs_task_definition" "api" {
         { name = "AWS_REGION", value = "ap-southeast-2" },
         { name = "S3_UPLOAD_BUCKET", value = aws_s3_bucket.csv_uploads.id },
         { name = "SQS_QUEUE_URL", value = aws_sqs_queue.import_jobs_fifo.url },
-        { name = "MONGO_URI", value = "mongodb://adminuser:password123@${aws_docdb_cluster.main.endpoint}:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false" }
+        { name = "MONGO_URI", value = "mongodb://mongodb.csv-app.local:27017/csv" }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -175,7 +182,7 @@ resource "aws_ecs_task_definition" "worker" {
         { name = "AWS_REGION", value = "ap-southeast-2" },
         { name = "S3_UPLOAD_BUCKET", value = aws_s3_bucket.csv_uploads.id },
         { name = "SQS_QUEUE_URL", value = aws_sqs_queue.import_jobs_fifo.url },
-        { name = "MONGO_URI", value = "mongodb://adminuser:password123@${aws_docdb_cluster.main.endpoint}:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false" }
+        { name = "MONGO_URI", value = "mongodb://mongodb.csv-app.local:27017/csv" }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -189,7 +196,84 @@ resource "aws_ecs_task_definition" "worker" {
   ])
 }
 
+# --- Service Discovery (Cloud Map) ---
+resource "aws_service_discovery_private_dns_namespace" "main" {
+  name        = "csv-app.local"
+  description = "Service discovery for CSV app"
+  vpc         = data.aws_vpc.default.id
+}
+
+resource "aws_service_discovery_service" "mongodb" {
+  name = "mongodb"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
+# --- MongoDB Task Definition ---
+resource "aws_ecs_task_definition" "mongodb" {
+  family                   = "csv-app-mongodb"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "mongodb"
+      image     = "mongo:latest"
+      essential = true
+      portMappings = [
+        {
+          containerPort = 27017
+          hostPort      = 27017
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.api_logs.name
+          "awslogs-region"        = "ap-southeast-2"
+          "awslogs-stream-prefix" = "ecs-mongo"
+        }
+      }
+    }
+  ])
+}
+
 # --- ECS Services ---
+
+resource "aws_ecs_service" "mongodb" {
+  name            = "csv-app-mongodb-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.mongodb.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = data.aws_subnets.default.ids
+    security_groups  = [aws_security_group.ecs_sg.id]
+    assign_public_ip = true
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.mongodb.arn
+  }
+}
 
 resource "aws_ecs_service" "api" {
   name            = "csv-app-api-service"
