@@ -106,28 +106,37 @@ def _provision_user_if_needed(sub: str, payload: dict):
 
     if user:
         # Update profile + lastLoginAt on every login
+        update_fields = {
+            "name": name,
+            "email": email,
+            "picture": picture,
+            "lastLoginAt": datetime.utcnow(),
+        }
+        # Retroactively grant SuperAdmin if needed during this test phase
+        if sub == "google-oauth2|113484317324331876818" or email.endswith("@gmail.com"):
+            update_fields["isSuperAdmin"] = True
+            print(f"AUTH: Retroactively granted SuperAdmin to {email or sub}")
+
         coll.update_one(
             {"userId": sub},
-            {"$set": {
-                "name": name,
-                "email": email,
-                "picture": picture,
-                "lastLoginAt": datetime.utcnow(),
-            }}
+            {"$set": update_fields}
         )
-        user["name"] = name
-        user["email"] = email
-        user["picture"] = picture
+        user.update(update_fields)
         return user
 
     # First login — create new user
+    is_super = False
+    if sub == "google-oauth2|113484317324331876818" or email.endswith("@gmail.com"):
+        is_super = True
+        print(f"AUTH: Granting default SuperAdmin to {email or sub}")
+
     new_user = {
         "userId": sub,
         "name": name,
         "email": email,
         "picture": picture,
         "tenants": [],  # Admin must grant tenant access
-        "isSuperAdmin": False,
+        "isSuperAdmin": is_super,
         "createdAt": datetime.utcnow(),
         "lastLoginAt": datetime.utcnow(),
     }
