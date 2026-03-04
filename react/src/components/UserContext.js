@@ -22,6 +22,8 @@ function Auth0UserProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    console.log("[UserContext] Auth0 State:", { isAuthenticated, auth0Loading, hasUser: !!auth0User });
+
     const authFetch = useCallback(async (url, options = {}) => {
         let headers = { ...options.headers };
         if (isAuthenticated) {

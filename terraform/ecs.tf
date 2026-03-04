@@ -142,7 +142,8 @@ resource "aws_ecs_task_definition" "api" {
         { name = "FLASK_ENV", value = "production" },
         { name = "AWS_REGION", value = "ap-southeast-2" },
         { name = "S3_UPLOAD_BUCKET", value = aws_s3_bucket.csv_uploads.id },
-        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.import_jobs_fifo.url }
+        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.import_jobs_fifo.url },
+        { name = "MONGO_URI", value = "mongodb://adminuser:password123@${aws_docdb_cluster.main.endpoint}:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false" }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -173,7 +174,8 @@ resource "aws_ecs_task_definition" "worker" {
       environment = [
         { name = "AWS_REGION", value = "ap-southeast-2" },
         { name = "S3_UPLOAD_BUCKET", value = aws_s3_bucket.csv_uploads.id },
-        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.import_jobs_fifo.url }
+        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.import_jobs_fifo.url },
+        { name = "MONGO_URI", value = "mongodb://adminuser:password123@${aws_docdb_cluster.main.endpoint}:27017/?ssl=true&ssl_ca_certs=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false" }
       ]
       logConfiguration = {
         logDriver = "awslogs"
