@@ -1,6 +1,7 @@
 {
-  "name": "csv",
+  "name": "ingestr",
   "version": "0.1.0",
+  "description": "Clean, validated, developer-ready imports for SaaS onboarding.",
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^2.15.0",

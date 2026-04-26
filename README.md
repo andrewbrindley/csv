@@ -1,70 +1,68 @@
-# Getting Started with Create React App
+# ingestr
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Clean data, ready to ingest.
 
-## Available Scripts
+ingestr is a staging layer between messy customer CSVs and your API. It takes
+inconsistent uploads — wrong headers, broken dates, missing required fields,
+out-of-enum values — and turns them into validated, developer-ready records
+your engineering team can ingest with confidence.
 
-In the project directory, you can run:
+## Why
 
-### `npm start`
+When SaaS customers onboard, their data is rarely clean. The "import script"
+ends up being weeks of glue code, retry logic, error reporting, and audit
+plumbing — all to get one CSV into one database. ingestr removes that work
+from your team.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+You don't replace anyone's database. You hand them:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- A predictable, validated payload
+- A schema and contract their devs can implement once
+- A clear delivery log
+- Failed records and *why* they failed
+- Sample handler code
 
-### `npm test`
+## Highlights
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Template-driven schemas** with PII flags, references, and enum validation
+- **AI + algorithmic header mapping** with per-tenant alias learning
+- **Selective AI cleaning** with strict per-request cost caps
+- **Multi-tenant** with role-based access (Auth0)
+- **Async ingestion** with full per-record audit logs and rollback
+- **Webhooks** per template
+- **API keys** + Swagger docs
 
-### `npm run build`
+## Architecture
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Frontend:** React 19, styled-components, Auth0 SPA
+- **Backend:** Flask 3, MongoDB / DocumentDB
+- **Async:** in-process MongoDB-polling worker (and an alternative SQS path
+  for AWS production)
+- **Infra:** AWS ECS + CloudFront + DocumentDB, provisioned with Terraform
+- **CI/CD:** GitHub Actions to ECS + S3
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Running locally
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+See [LOCAL_DEV.md](./LOCAL_DEV.md) for the full setup. Short version:
 
-### `npm run eject`
+```bash
+# Terminal 1 — backend
+cd flask
+pip install -r requirements.txt
+cp .env.example .env  # fill in Mongo, Auth0, OpenAI
+py main.py
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Terminal 2 — frontend
+cp .env.example .env.local  # fill in Auth0
+npm install
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+App: http://localhost:3000 — API: http://localhost:5000
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Deploying
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The GitHub Actions workflow at `.github/workflows/deploy.yml` builds Docker
+images, pushes them to ECR, force-deploys ECS services, and syncs the React
+build to S3 behind CloudFront. AWS credentials and environment variables come
+from the ECS task definition, not from `flask/.env`.

@@ -18,12 +18,34 @@ const StyledIframe = styled.iframe`
   border: none;
 `;
 
+const DEFAULT_QUERY = `# Welcome to ingestr's GraphQL playground.
+# The schema is built dynamically from your tenant's templates.
+# Hit the Play button or Cmd/Ctrl + Enter to run.
+
+{
+  people {
+    id
+    firstName
+    surname
+    email
+  }
+  bookings {
+    bookingRef
+    personNumber
+    locationName
+  }
+}
+`;
+
 export default function GraphQLPlayground({ tenantId }) {
     // Extract the host from API_BASE
     const urlObj = new URL(API_BASE, window.location.origin);
 
-    // The GraphiQL interface needs the tenantId in the URL to contextually load the schema
-    const graphqlUrl = `${urlObj.origin}/graphql?tenantId=${tenantId}`;
+    // The GraphiQL interface needs the tenantId in the URL to contextually load the schema.
+    // We also seed a default query via ?query=... so the editor isn't empty on load.
+    const graphqlUrl =
+        `${urlObj.origin}/graphql?tenantId=${encodeURIComponent(tenantId)}` +
+        `&query=${encodeURIComponent(DEFAULT_QUERY)}`;
 
     return (
         <div style={{ padding: 20, height: '100%', display: 'flex', flexDirection: 'column' }}>

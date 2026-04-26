@@ -168,7 +168,11 @@ def process_ingestion_jobs():
       5. Update job status to 'completed'.
     """
     print("WORKER: Ingestion processing thread started.")
-    
+
+    backoff = 2  # exponential-backoff seconds when MongoDB is unreachable
+    last_err_msg = None
+    err_streak = 0
+
     while True:
         try:
             coll_jobs = get_ingestion_jobs_collection()
@@ -270,11 +274,22 @@ def process_ingestion_jobs():
                         ]
                         
                         for future in as_completed(futures):
-                            res = future.result()
-                            if res["status"] == "error":
+                            try:
+                                res = future.result()
+                            except Exception as ex:
+                                print(f"WORKER: process_single_record raised: {type(ex).__name__}: {ex}")
                                 stage_stats["errors"] += 1
                                 any_error = True
-                            elif res["status"] == "success":
+                                continue
+                            if not isinstance(res, dict):
+                                print(f"WORKER: unexpected result shape: {res!r}")
+                                stage_stats["errors"] += 1
+                                any_error = True
+                                continue
+                            if res.get("status") == "error":
+                                stage_stats["errors"] += 1
+                                any_error = True
+                            elif res.get("status") == "success":
                                 op = res.get("operation", "updated")
                                 if op == "created":
                                     stage_stats["created"] += 1
@@ -324,9 +339,24 @@ def process_ingestion_jobs():
                     daemon=True
                 ).start()
 
-            time.sleep(2) # Poll interval
-            
+            time.sleep(2)  # Poll interval
+            # Healthy tick — reset backoff state.
+            backoff = 2
+            last_err_msg = None
+            err_streak = 0
+
         except Exception as e:
-            print(f"WORKER CRASH: {e}")
-            time.sleep(5)
+            # Truncate noisy multi-line errors (e.g. pymongo topology dumps).
+            msg = (str(e).splitlines()[0] if str(e) else type(e).__name__)
+            if len(msg) > 200:
+                msg = msg[:200] + " ..."
+            err_streak += 1
+            backoff = min(max(backoff * 2, 5), 60)
+            # Suppress repeats of the same error after the first 3 occurrences.
+            if msg != last_err_msg or err_streak <= 3:
+                print(f"WORKER: poll failed ({type(e).__name__}: {msg}); retrying in {backoff}s")
+            elif err_streak == 4:
+                print(f"WORKER: suppressing repeated '{type(e).__name__}' until it changes")
+            last_err_msg = msg
+            time.sleep(backoff)
 

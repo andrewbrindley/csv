@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { API_BASE } from "../config";
 
-const AUTH0_ENABLED = false; // Temporarily overriding process.env.REACT_APP_AUTH0_ENABLED === "true";
+const AUTH0_ENABLED = process.env.REACT_APP_AUTH0_ENABLED === "true";
 
 const UserContext = createContext(null);
 
@@ -39,13 +39,34 @@ function Auth0UserProvider({ children }) {
         if (auth0Loading) return;
         if (!isAuthenticated) { setUser(null); setLoading(false); return; }
 
+        let cancelled = false;
+        // Safety net: never let loading hang past 8 seconds.
+        const watchdog = setTimeout(() => {
+            if (cancelled) return;
+            console.warn("[UserContext] watchdog: /auth/me took >8s, falling back to Auth0 profile");
+            setUser((prev) => prev || {
+                userId: auth0User?.sub,
+                name: auth0User?.name,
+                email: auth0User?.email,
+                picture: auth0User?.picture || "",
+                tenants: [],
+                isSuperAdmin: false,
+            });
+            setLoading(false);
+        }, 8000);
+
         const fetchMe = async () => {
             setLoading(true);
             try {
                 const token = await getAccessTokenSilently();
+                const ctrl = new AbortController();
+                const reqTimeout = setTimeout(() => ctrl.abort(), 6000);
                 const res = await fetch(`${API_BASE}/auth/me`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    signal: ctrl.signal,
                 });
+                clearTimeout(reqTimeout);
+                if (cancelled) return;
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data.user);
@@ -60,12 +81,24 @@ function Auth0UserProvider({ children }) {
                     });
                 }
             } catch (err) {
+                if (cancelled) return;
                 console.error("[UserContext] Failed to fetch user profile:", err);
+                setUser({
+                    userId: auth0User?.sub,
+                    name: auth0User?.name,
+                    email: auth0User?.email,
+                    picture: auth0User?.picture || "",
+                    tenants: [],
+                    isSuperAdmin: false,
+                });
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
+                clearTimeout(watchdog);
             }
         };
         fetchMe();
+
+        return () => { cancelled = true; clearTimeout(watchdog); };
     }, [isAuthenticated, auth0Loading, getAccessTokenSilently, auth0User]);
 
     const login = useCallback(() => loginWithRedirect(), [loginWithRedirect]);

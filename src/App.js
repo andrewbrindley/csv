@@ -51,6 +51,7 @@ import {
   HeaderSub,
   Content,
   LogoDot,
+  Brand,
   TooltipContainer,
   TooltipCard,
   TooltipHeader,
@@ -76,6 +77,7 @@ import AuditLogs from "./components/AuditLogs";
 import UserManagement from "./components/UserManagement";
 import ApiDocs from "./components/ApiDocs";
 import GraphQLPlayground from "./components/GraphQLPlayground";
+import ThemeToggle from "./components/ThemeToggle";
 
 import { UserProvider, useUser } from "./components/UserContext";
 import RoleGate from "./components/RoleGate";
@@ -2257,6 +2259,7 @@ export default function App() {
           startEdit={startEdit}
           updateEdit={updateEdit}
           commitEdit={commitEdit}
+          applyCellUpdate={applyCellUpdate}
           editing={editing}
           onBack={() => {
             saveCurrentTemplateState();
@@ -2327,7 +2330,29 @@ export default function App() {
   };
 
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <>
+        <Global />
+        <div style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 12,
+          background: "var(--bg, #f4f6fb)",
+          color: "var(--fg, #0f172a)",
+          fontFamily: "system-ui, sans-serif",
+        }}>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>
+            ingestr<span style={{ color: "#6366f1" }}>.</span>
+          </div>
+          <div style={{ fontSize: 13, opacity: 0.6 }}>Loading your workspace…</div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -2411,14 +2436,16 @@ export default function App() {
         </SideNav>
         <Main>
           <Header>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <LogoDot>A</LogoDot>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#1e293b" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+              <Brand />
+              <div style={{ width: 1, height: 20, background: "var(--border)" }} />
+              <div style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)", opacity: 0.7, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {tabTitles[currentTab] || "Admin Centre"}
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <ThemeToggle />
               {isAdmin(selectedTenantId) && (
                 <IconButton
                   variant="danger"

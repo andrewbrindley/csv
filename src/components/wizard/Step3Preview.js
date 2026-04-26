@@ -37,6 +37,7 @@ export default function Step3Preview({
     startEdit,
     updateEdit,
     commitEdit,
+    applyCellUpdate,
     editing,
     onBack,
     onNext,
@@ -230,44 +231,47 @@ export default function Step3Preview({
                                                     style = { background: "#f0fdf4", border: "1px solid #bbf7d0" };
                                                 }
 
+                                                const isEnum = f.allowed && f.allowed.length > 0;
+
                                                 return (
                                                     <Td key={f.key} style={{ padding: 0 }}>
                                                         <CellInner
                                                             status={cell.status}
                                                             style={style}
-                                                            onClick={() => !isEditing && startEdit(row.__rowIndex, f.key)}
+                                                            onClick={() => !isEditing && !isEnum && startEdit(row.__rowIndex, f.key)}
                                                             title={cell.validationError || ""} // Show error tooltip
                                                         >
-                                                            {isEditing ? (
+                                                            {isEnum ? (
+                                                                // Always-on dropdown for enum fields. Commits immediately
+                                                                // on change so the cell turns green without a blur step.
                                                                 <CellControl>
-                                                                    {f.allowed && f.allowed.length > 0 ? (
-                                                                        <CellSelect
-                                                                            autoFocus
-                                                                            value={editing[cellId]}
-                                                                            onChange={(e) => updateEdit(row.__rowIndex, f.key, e.target.value)}
-                                                                            onBlur={() => commitEdit(row.__rowIndex, f.key)}
-                                                                            onKeyDown={(e) => {
-                                                                                if (e.key === "Enter") commitEdit(row.__rowIndex, f.key);
-                                                                            }}
-                                                                        >
-                                                                            <option value="">(Select)</option>
-                                                                            {f.allowed.map((val) => (
-                                                                                <option key={val} value={val}>
-                                                                                    {val}
-                                                                                </option>
-                                                                            ))}
-                                                                        </CellSelect>
-                                                                    ) : (
-                                                                        <CellInput
-                                                                            autoFocus
-                                                                            value={editing[cellId]}
-                                                                            onChange={(e) => updateEdit(row.__rowIndex, f.key, e.target.value)}
-                                                                            onBlur={() => commitEdit(row.__rowIndex, f.key)}
-                                                                            onKeyDown={(e) => {
-                                                                                if (e.key === "Enter") commitEdit(row.__rowIndex, f.key);
-                                                                            }}
-                                                                        />
-                                                                    )}
+                                                                    <CellSelect
+                                                                        value={cell.value || ""}
+                                                                        onChange={(e) =>
+                                                                            applyCellUpdate
+                                                                                ? applyCellUpdate(row.__rowIndex, f.key, e.target.value)
+                                                                                : (updateEdit(row.__rowIndex, f.key, e.target.value), commitEdit(row.__rowIndex, f.key))
+                                                                        }
+                                                                    >
+                                                                        <option value="">(Select)</option>
+                                                                        {f.allowed.map((val) => (
+                                                                            <option key={val} value={val}>
+                                                                                {val}
+                                                                            </option>
+                                                                        ))}
+                                                                    </CellSelect>
+                                                                </CellControl>
+                                                            ) : isEditing ? (
+                                                                <CellControl>
+                                                                    <CellInput
+                                                                        autoFocus
+                                                                        value={editing[cellId]}
+                                                                        onChange={(e) => updateEdit(row.__rowIndex, f.key, e.target.value)}
+                                                                        onBlur={() => commitEdit(row.__rowIndex, f.key)}
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === "Enter") commitEdit(row.__rowIndex, f.key);
+                                                                        }}
+                                                                    />
                                                                 </CellControl>
                                                             ) : (
                                                                 <span

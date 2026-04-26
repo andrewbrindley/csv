@@ -83,9 +83,9 @@ def _deliver(webhook: dict, payload: dict) -> None:
 
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=15)
-        print(f"WEBHOOK: Delivered '{name}' → {url} — HTTP {resp.status_code}")
+        print(f"WEBHOOK: Delivered '{name}' -> {url} -- HTTP {resp.status_code}")
     except Exception as e:
-        print(f"WEBHOOK: Delivery failed '{name}' → {url}: {e}")
+        print(f"WEBHOOK: Delivery failed '{name}' -> {url}: {e}")
 
 
 # --------------------------------------------------------------------------

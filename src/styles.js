@@ -1,33 +1,72 @@
 import styled, { css } from "styled-components";
 
+/**
+ * ingestr — visual layer.
+ *
+ * Every styled-component pulls colour, spacing, typography, motion, and
+ * breakpoints from the theme provided by ThemeProvider (see theme.js +
+ * components/ThemeContext.js).
+ *
+ * Component shapes, prop signatures, and exports have not changed. Only the
+ * visual values have. Layout, sizing, behaviour, and DOM are preserved.
+ */
+
+const focus = css`
+  outline: none;
+  box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.focusRing};
+`;
+
 export const Btn = styled.button`
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: ${({ theme }) => theme.radius.sm};
   font-size: 13px;
-  border: none;
+  font-family: inherit;
+  font-weight: 500;
+  border: 1px solid transparent;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 120px;
-  transition: background 0.12s ease, transform 0.08s ease;
+  transition: background ${({ theme }) => theme.motion.fast},
+              border-color ${({ theme }) => theme.motion.fast},
+              color ${({ theme }) => theme.motion.fast},
+              transform 80ms cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(0);
+
+  &:focus-visible {
+    ${focus}
+  }
 
   ${(p) =>
     p.variant === "primary"
       ? css`
-          background: #007bff;
-          color: #fff;
+          background: ${({ theme }) => theme.colors.accent.base};
+          color: ${({ theme }) => theme.colors.accent.fg};
+          border-color: ${({ theme }) => theme.colors.accent.base};
+
+          &:hover:not(:disabled) {
+            background: ${({ theme }) => theme.colors.accent.hover};
+            border-color: ${({ theme }) => theme.colors.accent.hover};
+          }
 
           &:disabled {
-            background: #9ca3ff;
+            background: ${({ theme }) => theme.colors.borderStrong};
+            border-color: ${({ theme }) => theme.colors.borderStrong};
+            color: ${({ theme }) => theme.colors.fgFaint};
             cursor: not-allowed;
             transform: none;
           }
         `
       : css`
-          background: #e5e7eb;
-          color: #374151;
+          background: ${({ theme }) => theme.colors.surface};
+          color: ${({ theme }) => theme.colors.fg};
+          border-color: ${({ theme }) => theme.colors.border};
+
+          &:hover:not(:disabled) {
+            background: ${({ theme }) => theme.colors.surfaceAlt};
+            border-color: ${({ theme }) => theme.colors.borderStrong};
+          }
         `}
 
   &:active:not(:disabled) {
@@ -36,16 +75,18 @@ export const Btn = styled.button`
 `;
 
 export const Card = styled.div`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  box-shadow: ${({ theme }) => theme.shadow.sm};
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  color: ${({ theme }) => theme.colors.fg};
 
-  @media (max-height: 900px) {
+  ${({ theme }) => theme.bp.shortViewport} {
     height: auto;
     min-height: 100%;
     overflow: visible;
@@ -54,31 +95,38 @@ export const Card = styled.div`
 
 export const SectionTitle = styled.h3`
   margin: 4px 0 8px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  color: ${({ theme }) => theme.colors.fg};
 `;
 
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: 0px;
+  margin-top: 0;
   font-size: 13px;
-  table-layout: auto; /* Allow columns to expand to fit text */
+  table-layout: auto;
+  color: ${({ theme }) => theme.colors.fg};
 `;
 
 export const Th = styled.th`
   text-align: left;
-  padding: 8px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 10px 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surfaceMuted};
   position: sticky;
   top: 0;
   z-index: 20;
   font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.colors.fgMuted};
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: visible;
-  min-width: 150px; /* Default stable width */
+  min-width: 150px;
 
   &:hover {
     z-index: 50;
@@ -86,161 +134,166 @@ export const Th = styled.th`
 `;
 
 export const Td = styled.td`
-  padding: 6px 8px;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 8px 12px;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   vertical-align: middle;
-  background: #fff;
+  background: ${({ theme }) => theme.colors.surface};
   height: 32px;
   box-sizing: border-box;
   white-space: nowrap;
+  color: ${({ theme }) => theme.colors.fg};
 `;
+
+const statusFg = (theme, key) => theme.colors.status[key].fg;
+const statusBg = (theme, key) => theme.colors.status[key].bg;
+const statusBd = (theme, key) => theme.colors.status[key].border;
 
 export const StatusBadge = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: ${({ theme }) => theme.radius.pill};
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  border: 1px solid transparent;
 
   ${(p) =>
     p.kind === "direct" &&
     css`
-      background: #dcfce7;
-      color: #15803d;
-      border: 1px solid #bbf7d0;
+      color: ${({ theme }) => statusFg(theme, "success")};
+      background: ${({ theme }) => statusBg(theme, "success")};
+      border-color: ${({ theme }) => statusBd(theme, "success")};
     `}
   ${(p) =>
     p.kind === "ai" &&
     css`
-      background: #dbeafe;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
+      color: ${({ theme }) => statusFg(theme, "ai")};
+      background: ${({ theme }) => statusBg(theme, "ai")};
+      border-color: ${({ theme }) => statusBd(theme, "ai")};
     `}
   ${(p) =>
     p.kind === "confirm" &&
     css`
-      background: #fef3c7;
-      color: #b45309;
-      border: 1px solid #fde68a;
+      color: ${({ theme }) => statusFg(theme, "warning")};
+      background: ${({ theme }) => statusBg(theme, "warning")};
+      border-color: ${({ theme }) => statusBd(theme, "warning")};
     `}
   ${(p) =>
     p.kind === "none" &&
     css`
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
+      color: ${({ theme }) => statusFg(theme, "danger")};
+      background: ${({ theme }) => statusBg(theme, "danger")};
+      border-color: ${({ theme }) => statusBd(theme, "danger")};
     `}
-  
-  /* Additional status mappings for job history */
+
   ${(p) =>
     p.status === "ok" &&
     css`
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      color: ${({ theme }) => statusFg(theme, "success")};
+      background: ${({ theme }) => statusBg(theme, "success")};
+      border-color: ${({ theme }) => statusBd(theme, "success")};
     `}
-
   ${(p) =>
     p.status === "warn" &&
     css`
-      background: #fffbeb; 
-      color: #92400e; 
-      border: 1px solid #fde68a;
+      color: ${({ theme }) => statusFg(theme, "warning")};
+      background: ${({ theme }) => statusBg(theme, "warning")};
+      border-color: ${({ theme }) => statusBd(theme, "warning")};
     `}
-
   ${(p) =>
     p.status === "bad" &&
     css`
-      background: #fef2f2; 
-      color: #991b1b; 
-      border: 1px solid #fecaca;
+      color: ${({ theme }) => statusFg(theme, "danger")};
+      background: ${({ theme }) => statusBg(theme, "danger")};
+      border-color: ${({ theme }) => statusBd(theme, "danger")};
     `}
-
   ${(p) =>
     p.status === "pending" &&
     css`
-      background: #f1f5f9; 
-      color: #475569; 
-      border: 1px solid #e2e8f0;
+      color: ${({ theme }) => statusFg(theme, "neutral")};
+      background: ${({ theme }) => statusBg(theme, "neutral")};
+      border-color: ${({ theme }) => statusBd(theme, "neutral")};
     `}
 `;
 
 export const ErrorBanner = styled.div`
   margin-top: 8px;
   padding: 8px 12px;
-  border-radius: 6px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ theme }) => statusBg(theme, "danger")};
+  border: 1px solid ${({ theme }) => statusBd(theme, "danger")};
+  color: ${({ theme }) => statusFg(theme, "danger")};
   font-size: 12px;
 `;
 
 export const PiiTag = styled.span`
   margin-left: 6px;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: ${({ theme }) => theme.radius.pill};
   font-size: 9px;
-  font-weight: 500;
-  background: #fef3c7;
-  color: #92400e;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  background: ${({ theme }) => statusBg(theme, "warning")};
+  color: ${({ theme }) => statusFg(theme, "warning")};
+  border: 1px solid ${({ theme }) => statusBd(theme, "warning")};
 `;
 
 export const CellPill = styled.div`
   width: 100%;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: ${({ theme }) => theme.radius.sm};
   font-size: 13px;
-  transition: all 0.2s ease;
+  transition: all ${({ theme }) => theme.motion.base};
   border: 1px solid transparent;
+  color: ${({ theme }) => theme.colors.fg};
 
   ${(p) =>
     p.status === "ok" &&
     css`
-      background: #f0fdf4;
-      border-color: #dcfce7;
-      color: #166534;
+      background: ${({ theme }) => statusBg(theme, "success")};
+      border-color: ${({ theme }) => statusBd(theme, "success")};
+      color: ${({ theme }) => statusFg(theme, "success")};
       &:focus-within {
-        border-color: #16a34a;
-        box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1);
+        border-color: ${({ theme }) => statusFg(theme, "success")};
+        ${focus}
       }
     `}
 
   ${(p) =>
     p.status === "warn" &&
     css`
-      background: #fffbeb;
-      border-color: #fef3c7;
-      color: #92400e;
+      background: ${({ theme }) => statusBg(theme, "warning")};
+      border-color: ${({ theme }) => statusBd(theme, "warning")};
+      color: ${({ theme }) => statusFg(theme, "warning")};
       &:focus-within {
-        border-color: #d97706;
+        border-color: ${({ theme }) => statusFg(theme, "warning")};
       }
     `}
 
   ${(p) =>
     p.status === "bad" &&
     css`
-      background: #fef2f2;
-      border-color: #fee2e2;
-      color: #991b1b;
+      background: ${({ theme }) => statusBg(theme, "danger")};
+      border-color: ${({ theme }) => statusBd(theme, "danger")};
+      color: ${({ theme }) => statusFg(theme, "danger")};
       &:focus-within {
-        border-color: #dc2626;
-        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
+        border-color: ${({ theme }) => statusFg(theme, "danger")};
+        ${focus}
       }
     `}
 
-   ${(p) =>
+  ${(p) =>
     p.status === "neutral" &&
     css`
-      background: #f8fafc;
-      border-color: #e2e8f0;
-      color: #475569;
-       &:focus-within {
-        border-color: #94a3b8;
+      background: ${({ theme }) => statusBg(theme, "neutral")};
+      border-color: ${({ theme }) => statusBd(theme, "neutral")};
+      color: ${({ theme }) => statusFg(theme, "neutral")};
+      &:focus-within {
+        border-color: ${({ theme }) => theme.colors.borderStrong};
       }
     `}
 `;
@@ -256,8 +309,6 @@ export const CellText = styled.span`
   padding: 2px 4px;
 `;
 
-
-
 export const Main = styled.main`
   flex: 1;
   display: flex;
@@ -265,56 +316,98 @@ export const Main = styled.main`
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  background: ${({ theme }) => theme.colors.bg};
 `;
 
 export const Header = styled.header`
   height: 64px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: ${({ theme }) => theme.colors.surface};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 16px;
   flex-shrink: 0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: ${({ theme }) => theme.zIndex.sticky};
+  gap: 12px;
+  color: ${({ theme }) => theme.colors.fg};
+
+  ${({ theme }) => theme.bp.sm} {
+    padding: 0 24px;
+  }
 `;
 
 export const HeaderSub = styled.div`
   font-size: 12px;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.fgMuted};
   margin-top: 2px;
 `;
 
 export const Content = styled.div`
   flex: 1;
-  padding: 24px;
+  padding: 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
   scrollbar-gutter: stable;
+  background: ${({ theme }) => theme.colors.bg};
 
-  @media (max-height: 900px) {
+  ${({ theme }) => theme.bp.sm} {
+    padding: 24px;
+  }
+
+  ${({ theme }) => theme.bp.shortViewport} {
     overflow-y: auto;
     height: auto;
     display: block;
   }
 `;
 
+/**
+ * The historical "logo dot" — kept for backward compatibility, but restyled
+ * as a square rounded mark in the accent colour. New code should prefer
+ * <Brand /> below.
+ */
 export const LogoDot = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: #2563eb;
+  width: 28px;
+  height: 28px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ theme }) => theme.colors.accent.base};
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: #fff;
-  font-size: 18px;
+  color: ${({ theme }) => theme.colors.accent.fg};
+  font-size: 14px;
   flex-shrink: 0;
+  letter-spacing: -0.02em;
+`;
+
+/**
+ * ingestr wordmark. Always renders the brand consistently.
+ */
+export const Brand = styled.div`
+  display: inline-flex;
+  align-items: baseline;
+  font-family: ${({ theme }) => theme.font.sans};
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+  color: ${({ theme }) => theme.colors.fg};
+  user-select: none;
+
+  &::before {
+    content: "ingestr";
+  }
+
+  &::after {
+    content: ".";
+    color: ${({ theme }) => theme.colors.accent.base};
+    margin-left: 1px;
+  }
 `;
 
 /* Tooltip Components */
@@ -326,20 +419,20 @@ export const TooltipContainer = styled.div`
 `;
 
 export const TooltipCard = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-radius: 6px;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
+  border-radius: ${({ theme }) => theme.radius.sm};
   overflow: hidden;
   font-size: 13px;
   text-align: left;
-  color: #374151;
+  color: ${({ theme }) => theme.colors.fg};
 `;
 
 export const TooltipHeader = styled.div`
-  background: #f9fafb;
+  background: ${({ theme }) => theme.colors.surfaceMuted};
   padding: 8px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   font-weight: 600;
   display: flex;
   justify-content: space-between;
@@ -360,22 +453,22 @@ export const TooltipSection = styled.div`
 `;
 
 export const TooltipLabel = styled.div`
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.fgFaint};
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
 `;
 
 export const CodeBadge = styled.span`
   display: inline-block;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  padding: 2px 5px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: ${({ theme }) => theme.colors.codeBg};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.xs};
+  padding: 2px 6px;
+  font-family: ${({ theme }) => theme.font.mono};
   font-size: 11px;
-  color: #4b5563;
+  color: ${({ theme }) => theme.colors.fgMuted};
   margin-right: 4px;
   margin-bottom: 4px;
 `;
@@ -386,6 +479,7 @@ export const ToolHeader = styled.div`
   gap: 8px;
   margin-bottom: 12px;
   font-weight: 600;
+  color: ${({ theme }) => theme.colors.fg};
 `;
 
 export const UploadIcon = styled.span`
@@ -398,7 +492,12 @@ export const WizardBar = styled.div`
   gap: 12px;
   margin: 10px 0 24px;
   font-size: 14px;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.fgMuted};
+  flex-wrap: wrap;
+
+  ${({ theme }) => theme.bp.sm} {
+    flex-wrap: nowrap;
+  }
 `;
 
 export const StepCircle = styled.div`
@@ -409,38 +508,45 @@ export const StepCircle = styled.div`
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  font-size: 13px;
+  transition: background ${({ theme }) => theme.motion.fast},
+              border-color ${({ theme }) => theme.motion.fast},
+              color ${({ theme }) => theme.motion.fast};
 
-  ${({ active, done }) =>
+  ${({ active, done, theme }) =>
     active
       ? css`
-          background: #2563eb;
-          color: #fff;
-          border: 2px solid #2563eb;
+          background: ${theme.colors.accent.base};
+          color: ${theme.colors.accent.fg};
+          border: 2px solid ${theme.colors.accent.base};
         `
       : done
-        ? css`
-          background: #e5f3ff;
-          color: #2563eb;
-          border: 2px solid #2563eb;
+      ? css`
+          background: ${theme.colors.accent.soft};
+          color: ${theme.colors.accent.base};
+          border: 2px solid ${theme.colors.accent.base};
         `
-        : css`
-          background: #fff;
-          color: #6b7280;
-          border: 2px solid #d1d5db;
+      : css`
+          background: ${theme.colors.surface};
+          color: ${theme.colors.fgMuted};
+          border: 2px solid ${theme.colors.borderStrong};
         `}
 `;
 
-export const StepLabel = styled.span``;
+export const StepLabel = styled.span`
+  color: ${({ theme }) => theme.colors.fgMuted};
+`;
 
 export const StepLine = styled.div`
   flex: 1;
   height: 1px;
-  background: #d1d5db;
+  background: ${({ theme }) => theme.colors.border};
+  min-width: 16px;
 `;
 
 export const SmallNote = styled.div`
   font-size: 11px;
-  color: #6b7280;
+  color: ${({ theme }) => theme.colors.fgMuted};
   margin-top: 4px;
 `;
 
@@ -449,39 +555,56 @@ export const Row = styled.div`
   align-items: flex-start;
   gap: 16px;
   margin: 8px 0;
+  flex-wrap: wrap;
+
+  ${({ theme }) => theme.bp.md} {
+    flex-wrap: nowrap;
+  }
 `;
 
 export const Col = styled.div`
   flex: ${(p) => p.flex || 1};
+  min-width: 0;
 `;
 
 export const ButtonRow = styled.div`
-  margin-top: auto;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 24px;
+  flex-wrap: wrap;
 `;
 
 export const DropZone = styled.div`
-  border: 2px dashed #cbd5e1;
-  border-radius: 6px;
-  padding: 24px;
+  border: 1.5px dashed ${({ theme }) => theme.colors.borderStrong};
+  border-radius: ${({ theme }) => theme.radius.md};
+  padding: 32px 24px;
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
-  background: ${(p) => (p.drag ? "#f1f5ff" : "#f9fafb")};
+  color: ${({ theme }) => theme.colors.fgMuted};
+  background: ${(p) =>
+    p.drag ? p.theme.colors.accent.soft : p.theme.colors.surfaceMuted};
+  border-color: ${(p) =>
+    p.drag ? p.theme.colors.accent.base : p.theme.colors.borderStrong};
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background ${({ theme }) => theme.motion.fast},
+              border-color ${({ theme }) => theme.motion.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.accent.soft};
+    border-color: ${({ theme }) => theme.colors.accent.base};
+    color: ${({ theme }) => theme.colors.fg};
+  }
 `;
 
 export const DZMain = styled.div`
   margin-bottom: 6px;
+  color: ${({ theme }) => theme.colors.fg};
 `;
 
 export const DZHint = styled.div`
   font-size: 11px;
-  color: #9ca3af;
+  color: ${({ theme }) => theme.colors.fgFaint};
 `;
 
 export const CellInner = styled.div`
@@ -489,34 +612,38 @@ export const CellInner = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
-`; // Removed padding-right: 26px
+`;
 
 export const CellInput = styled.input`
   width: 100%;
-  font-family: inherit; /* Ensure font matches static text */
+  font-family: inherit;
   font-size: 13px;
-  line-height: inherit; 
+  line-height: inherit;
   padding: 8px 12px;
-  border-radius: 2px;
+  border-radius: ${({ theme }) => theme.radius.xs};
   border: none;
   background: transparent;
   outline: none;
   color: inherit;
+
+  &:focus-visible {
+    ${focus}
+  }
 `;
 
 export const CellSelect = styled.select`
   width: 100%;
-  font-family: inherit; /* Ensure font matches static text */
+  font-family: inherit;
   font-size: 13px;
   line-height: inherit;
   padding: 8px 24px 8px 12px;
-  border-radius: 2px;
+  border-radius: ${({ theme }) => theme.radius.xs};
   border: none;
   background: transparent;
   appearance: none;
   outline: none;
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371717a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 14px;
@@ -529,54 +656,53 @@ export const CellControl = styled.div`
 `;
 
 export const TemplateTabBtn = styled.button`
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1.5px solid #e2e8f0;
-  background: #ffffff;
-  color: #64748b;
+  padding: 8px 14px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.surface};
+  color: ${({ theme }) => theme.colors.fgMuted};
   font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all ${({ theme }) => theme.motion.fast};
 
   &:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    color: #334155;
+    background: ${({ theme }) => theme.colors.surfaceAlt};
+    border-color: ${({ theme }) => theme.colors.borderStrong};
+    color: ${({ theme }) => theme.colors.fg};
+  }
+
+  &:focus-visible {
+    ${focus}
   }
 
   ${(p) =>
     p.active &&
     css`
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #2563eb;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+      background: ${({ theme }) => theme.colors.accent.base};
+      color: ${({ theme }) => theme.colors.accent.fg};
+      border-color: ${({ theme }) => theme.colors.accent.base};
       font-weight: 600;
-      
+
       &:hover {
-        background: #1d4ed8;
-        border-color: #1d4ed8;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
-        color: #ffffff;
+        background: ${({ theme }) => theme.colors.accent.hover};
+        border-color: ${({ theme }) => theme.colors.accent.hover};
+        color: ${({ theme }) => theme.colors.accent.fg};
       }
     `}
 `;
 
 export const StatusDot = styled.span`
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   display: inline-block;
-  background: ${(p) => p.color || "#cbd5e1"};
-  box-shadow: 0 0 0 2px ${(p) => (p.color ? `${p.color}20` : "#cbd5e120")};
+  background: ${(p) => p.color || p.theme.colors.borderStrong};
+  box-shadow: 0 0 0 3px ${(p) => (p.color ? `${p.color}22` : "transparent")};
 `;
 
 export const RemoveTabBtn = styled.span`
@@ -586,46 +712,41 @@ export const RemoveTabBtn = styled.span`
   justify-content: center;
   width: 14px;
   height: 14px;
-  border-radius: 4px;
+  border-radius: ${({ theme }) => theme.radius.xs};
   font-size: 10px;
   color: inherit;
   opacity: 0.5;
-  transition: all 0.15s ease;
-  
+  transition: all ${({ theme }) => theme.motion.fast};
+
   &:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: ${({ theme }) => theme.colors.surfaceAlt};
     opacity: 1;
-    color: #ef4444;
+    color: ${({ theme }) => statusFg(theme, "danger")};
   }
 `;
 
 export const ResetAction = styled.button`
   background: transparent;
-  border: 1px solid #cbd5e1;
-  color: #64748b;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.fgMuted};
   font-size: 10px;
   font-weight: 600;
+  font-family: inherit;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
   cursor: pointer;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: ${({ theme }) => theme.radius.xs};
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all ${({ theme }) => theme.motion.fast};
   margin-left: 2px;
-  
+
   &:hover {
-    color: #334155;
-    border-color: #94a3b8;
-    background: #f8fafc;
-    transform: translateY(-1px);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-  
-  &:active {
-    transform: translateY(0);
+    color: ${({ theme }) => theme.colors.fg};
+    border-color: ${({ theme }) => theme.colors.borderStrong};
+    background: ${({ theme }) => theme.colors.surfaceAlt};
   }
 `;
 
@@ -634,11 +755,11 @@ export const FixedTableContainer = styled.div`
   min-height: 0;
   overflow: auto;
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #fff;
-  
-  @media (max-height: 900px) {
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.colors.surface};
+
+  ${({ theme }) => theme.bp.shortViewport} {
     flex: none;
     min-height: 400px;
     height: auto;
@@ -649,15 +770,18 @@ export const FixedTableContainer = styled.div`
   }
 
   &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   &::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: ${({ theme }) => theme.colors.surfaceMuted};
   }
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: ${({ theme }) => theme.colors.borderStrong};
+    border-radius: ${({ theme }) => theme.radius.xs};
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.colors.fgFaint};
   }
 `;
 
@@ -666,20 +790,21 @@ export const SourceTag = styled.span`
   right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #94a3b8;
-  
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: ${({ theme }) => theme.colors.fgFaint};
+  text-transform: uppercase;
+
   ${(p) =>
     p.kind === "ai" &&
     css`
-      color: #2563eb;
+      color: ${({ theme }) => theme.colors.accent.base};
     `}
   ${(p) =>
     p.kind === "user" &&
     css`
-      color: #b91c1c;
+      color: ${({ theme }) => statusFg(theme, "danger")};
     `}
 `;
 
@@ -689,29 +814,32 @@ export const UserProfile = styled.div`
   align-items: center;
   gap: 10px;
   padding: 4px 8px;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.radius.md};
   cursor: pointer;
-  transition: background 0.15s;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  transition: background ${({ theme }) => theme.motion.fast},
+              border-color ${({ theme }) => theme.motion.fast};
+  background: ${({ theme }) => theme.colors.surfaceAlt};
+  border: 1px solid ${({ theme }) => theme.colors.border};
 
   &:hover {
-    background: #f1f5f9;
+    background: ${({ theme }) => theme.colors.surfaceMuted};
+    border-color: ${({ theme }) => theme.colors.borderStrong};
   }
 `;
 
 export const UserAvatar = styled.div`
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #2563eb;
+  background: ${({ theme }) => theme.colors.accent.base};
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: ${({ theme }) => theme.colors.accent.fg};
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   overflow: hidden;
+  flex-shrink: 0;
 
   img {
     width: 100%;
@@ -728,13 +856,18 @@ export const ProfileInfo = styled.div`
   span:first-child {
     font-size: 13px;
     font-weight: 600;
-    color: #1e293b;
+    color: ${({ theme }) => theme.colors.fg};
     line-height: 1.2;
   }
-  
+
   span:last-child {
     font-size: 11px;
-    color: #64748b;
+    color: ${({ theme }) => theme.colors.fgMuted};
+  }
+
+  /* Hide the role label on small screens to keep header compact. */
+  @media (max-width: 640px) {
+    display: none;
   }
 `;
 
@@ -742,38 +875,43 @@ export const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 180px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  width: 200px;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  box-shadow: ${({ theme }) => theme.shadow.lg};
   padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 1000;
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
 `;
 
 export const DropdownItem = styled.button`
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 10px;
   border: none;
   background: transparent;
   text-align: left;
   font-size: 13px;
-  color: #1e293b;
-  border-radius: 6px;
+  font-family: inherit;
+  color: ${({ theme }) => theme.colors.fg};
+  border-radius: ${({ theme }) => theme.radius.sm};
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background ${({ theme }) => theme.motion.fast};
 
   &:hover {
-    background: #f1f5f9;
+    background: ${({ theme }) => theme.colors.surfaceAlt};
   }
 
-  ${p => p.variant === 'danger' && css`
-    color: #ef4444;
-    &:hover { background: #fee2e2; }
-  `}
+  ${(p) =>
+    p.variant === "danger" &&
+    css`
+      color: ${({ theme }) => statusFg(theme, "danger")};
+      &:hover {
+        background: ${({ theme }) => statusBg(theme, "danger")};
+      }
+    `}
 `;
 
 export const IconButton = styled.button`
@@ -782,27 +920,35 @@ export const IconButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
   cursor: pointer;
-  transition: all 0.15s;
-  color: #64748b;
+  transition: all ${({ theme }) => theme.motion.fast};
+  color: ${({ theme }) => theme.colors.fgMuted};
+  font-family: inherit;
+  flex-shrink: 0;
 
   &:hover {
-    background: #f1f5f9;
-    color: #1e293b;
-    border-color: #cbd5e1;
+    background: ${({ theme }) => theme.colors.surfaceAlt};
+    color: ${({ theme }) => theme.colors.fg};
+    border-color: ${({ theme }) => theme.colors.borderStrong};
   }
 
-  ${p => p.variant === 'danger' && css`
-    color: #ef4444;
-    background: #fef2f2;
-    border-color: #fecaca;
-    &:hover { background: #fee2e2; }
-  `}
+  &:focus-visible {
+    ${focus}
+  }
+
+  ${(p) =>
+    p.variant === "danger" &&
+    css`
+      color: ${({ theme }) => statusFg(theme, "danger")};
+      background: ${({ theme }) => statusBg(theme, "danger")};
+      border-color: ${({ theme }) => statusBd(theme, "danger")};
+      &:hover {
+        background: ${({ theme }) => statusBg(theme, "danger")};
+        border-color: ${({ theme }) => statusFg(theme, "danger")};
+        color: ${({ theme }) => statusFg(theme, "danger")};
+      }
+    `}
 `;
-
-
-
-

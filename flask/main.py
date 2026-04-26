@@ -14,12 +14,22 @@ Features:
 """
 
 import os
+import sys
 import json
 import re
 import csv
 import collections
 from collections import OrderedDict
 from datetime import datetime, timedelta
+
+# Force UTF-8 stdout/stderr on Windows so debug prints containing arrows,
+# checkmarks, or other non-cp1252 chars don't crash the request handler.
+# (Python 3.7+: TextIOWrapper.reconfigure)
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 # ---------------------------------------------------------------------------
 # Production safety caps
@@ -29,7 +39,6 @@ from datetime import datetime, timedelta
 # Raise this value carefully — at 50k rows with 10% errors = 5,000 error rows
 # which at $0.002/row = $10 per import call.
 MAX_AI_ERROR_ROWS = 200
-import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -2209,7 +2218,7 @@ def waterfall_header_match(
                 source = "T5-sample"
 
         if matched_header:
-            print(f"WATERFALL: {source}: '{fkey}' → '{matched_header}' (conf={confidence})")
+            print(f"WATERFALL: {source}: '{fkey}' -> '{matched_header}' (conf={confidence})")
             used_headers.add(matched_header)
         else:
             print(f"WATERFALL: no-match: '{fkey}' left unmapped")
@@ -2490,7 +2499,14 @@ def call_openai_chat(prompt: str, call_type: str, tenant_id: str = None, job_id:
             return None, None
 
         resp_json = resp.json()
-        content = resp_json["choices"][0]["message"]["content"]
+        choices = resp_json.get("choices") or []
+        if not choices:
+            print(f"DEBUG: OpenAI returned no choices: {resp_json}")
+            return None, None
+        content = (choices[0].get("message") or {}).get("content")
+        if content is None:
+            print(f"DEBUG: OpenAI choice missing message.content: {choices[0]}")
+            return None, None
         # usage
         usage = resp_json.get("usage", {})
 
@@ -3311,7 +3327,7 @@ def api_header_mapping():
     total_fields = len(waterfall_mappings)
     high_conf = [m for m in waterfall_mappings if m.get("matchedHeader") and m.get("confidence", 0) >= 0.5]
     if total_fields > 0 and len(high_conf) / total_fields >= 0.80:
-        print(f"WATERFALL: Skipping AI — {len(high_conf)}/{total_fields} fields already high-confidence")
+        print(f"WATERFALL: Skipping AI -- {len(high_conf)}/{total_fields} fields already high-confidence")
         return jsonify({"mappings": waterfall_mappings, "aiUsage": None})
 
     # Build enhanced prompt with enum values and sample data
@@ -3638,7 +3654,7 @@ def api_rollback_job(job_id):
                 "Their jobId tag has been cleared but the data changes remain."
             )
 
-        print(f"ROLLBACK: Job {job_id} — deleted {deleted} created records, cleared {cleared} updated records")
+        print(f"ROLLBACK: Job {job_id} -- deleted {deleted} created records, cleared {cleared} updated records")
         return jsonify({"deleted": deleted, "cleared": cleared, "warning": warning})
 
     except Exception as e:
@@ -5280,8 +5296,13 @@ def api_generate_mock_data():
         
         if "error" in resp_json:
             return jsonify({"error": str(resp_json["error"])}), 500
-            
-        content = resp_json["choices"][0]["message"]["content"]
+
+        choices = resp_json.get("choices") or []
+        if not choices:
+            return jsonify({"error": "OpenAI returned no choices"}), 502
+        content = (choices[0].get("message") or {}).get("content")
+        if content is None:
+            return jsonify({"error": "OpenAI choice missing content"}), 502
         
         # Clean potential markdown
         content = content.replace("```json", "").replace("```", "").strip()

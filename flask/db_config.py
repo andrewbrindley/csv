@@ -29,14 +29,26 @@ def get_db():
         
     try:
         print("DB: Establishing new connection...")
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        client = MongoClient(
+            MONGO_URI,
+            serverSelectionTimeoutMS=15000,
+            connectTimeoutMS=15000,
+            socketTimeoutMS=30000,
+            retryWrites=True,
+            retryReads=True,
+            maxPoolSize=20,
+        )
         # Verify connection on startup/first access only
         client.server_info()
         _db = client[MONGO_DB_NAME]
         print("DB: Connection successful.")
         return _db
     except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}")
+        # Truncate so the log doesn't get flooded with the full topology blob.
+        msg = str(e)
+        if len(msg) > 240:
+            msg = msg[:240] + " ..."
+        print(f"Failed to connect to MongoDB: {msg}")
         return None
 
 # Helper functions for collections

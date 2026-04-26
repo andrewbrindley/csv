@@ -4,6 +4,7 @@ import { API_BASE } from "../config";
 import { Btn, Card, SectionTitle, StatusBadge, Table, Th, Td } from "../styles";
 import Spinner from "./Spinner";
 import SavedDataViewer from "./SavedDataViewer";
+import FailedRecordsTable from "./FailedRecordsTable";
 
 import { useUser } from "./UserContext";
 
@@ -244,6 +245,12 @@ export default function JobHistory({ tenantId }) {
                             </div>
                         </div>
                     )}
+
+                    <FailedRecordsTable
+                        tenantId={tenantId}
+                        jobId={selectedJob.jobId}
+                        expectedCount={selectedJob.metrics?.errors || 0}
+                    />
 
                     <SavedDataViewer tenantId={tenantId} jobId={selectedJob.jobId} />
 

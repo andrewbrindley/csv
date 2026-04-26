@@ -201,7 +201,7 @@ def enrich_field(
             print(f"ENRICH: cache hit  [{template_key}.{field_key}]")
             return cached
 
-    print(f"ENRICH: cache miss [{template_key}.{field_key}] — calling AI...")
+    print(f"ENRICH: cache miss [{template_key}.{field_key}] -- calling AI...")
     ai_result = call_ai_for_enrichment(field, template_key, template_label)
 
     if not ai_result:
